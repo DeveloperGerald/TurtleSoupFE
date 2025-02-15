@@ -1,48 +1,59 @@
-// app/_layout.tsx
-import React from 'react';
-import { View, Text, useColorScheme } from 'react-native';
-import { Tabs } from 'expo-router';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack, Tabs, usePathname, useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
+import 'react-native-reanimated';
 
-export default function Layout() {
-  const colorScheme = useColorScheme();
+import { useColorScheme } from '@/hooks/useColorScheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export default function MainLayout() {
+  const [isLoading, setIsLoading] = useState(true); // 加载状态
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 登录状态
+  const router = useRouter();
+  const pathname = usePathname(); // 获取当前路由路径
+
+  console.log('start main layout');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      // 尝试从本地存储中获取用户的登录信息（例如：token）
+      const token = await AsyncStorage.getItem('userToken');
+      console.log('token', token);
+
+      if (false) {
+        // 如果有 token，说明用户已登录，跳转到主页面
+        setIsLoggedIn(true);
+      } else {
+        // 如果没有 token，跳转到登录页面
+        setIsLoggedIn(false);
+        if (pathname !== '/auth/LoginScreen' && pathname !== '/auth/RegisterScreen') {
+          console.log('pathname', pathname);
+          // router.replace('/auth/LoginScreen');
+        }
+      }
+
+      setIsLoading(false); // 加载完成，设置 loading 为 false
+    };
+
+    checkLoginStatus();
+  }, [pathname]);
+
+  console.log('isLoggedIn', isLoggedIn);
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn && pathname !== '/auth/LoginScreen' && pathname !== '/auth/RegisterScreen') { // 如果未登录，跳转到登录页面
+        router.replace('/auth/LoginScreen');
+        }
+  }, [isLoggedIn, isLoading]);
+
+  // 根据是否显示选项卡渲染不同的布局
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: '#FFFFFF', // 激活的Tab颜色
-          tabBarInactiveTintColor: '#B0B0B0', // 未激活的Tab颜色
-          tabBarStyle: {
-            backgroundColor: 'linear-gradient(45deg, #6a11cb, #2575fc)', // 渐变背景
-            borderTopWidth: 0, // 去除Tab条的边框
-            paddingBottom: 10,
-            height: 60,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 5, // Android的阴影
-          },
-          headerShown: true, // 隐藏顶部标题栏
-        }}
-      >
-        <Tabs.Screen
-          name="MainScreen"
-          options={{
-            title: '主页',
-            tabBarIcon: ({ color }) => <Icon size={28} name="home" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="UserScreen"
-          options={{
-            title: '个人',
-            tabBarIcon: ({ color }) => <Icon size={28} name="user" color={color} />,
-          }}
-        />
-      </Tabs>
-    </ThemeProvider>
+    <Tabs>
+        <Tabs.Screen name="MainScreen" options={{ title: '主页' }} />
+        <Tabs.Screen name="UserScreen" options={{ title: '我的' }} />
+    </Tabs>
   );
 }

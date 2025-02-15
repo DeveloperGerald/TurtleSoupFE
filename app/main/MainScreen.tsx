@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
 export default function MainScreen({ navigation }: any) {
+  console.log('start main screen');
   const router = useRouter()
 
   return (
