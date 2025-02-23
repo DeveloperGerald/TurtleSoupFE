@@ -4,6 +4,8 @@ import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity } from 'rea
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import styles from './AuthStyles';
+import { login } from '../service/user';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -40,13 +42,17 @@ export default function LoginScreen({ navigation }: any) {
 
     try {
       // 发送登录请求
-      const response = await axios.post('https://your-api-url/login', {
-        username,
-        password,
-      });
-      console.log('登录成功:', response.data);
-      // 登录成功后，跳转到主页面
-      navigation.navigate('Main');
+      const loginRes = await login(username, password);
+      console.log('loginRes', loginRes);
+      if (loginRes.token) {
+        // 将 token 存储到本地
+        await AsyncStorage.setItem('userToken', loginRes.token);
+        // 登录成功后，跳转到主页面
+        router.replace('/main/MainScreen');
+      }else {
+        setError('登录失败');
+      }
+      
     } catch (err) {
       console.error('登录失败', err);
       setError('用户名或密码错误');

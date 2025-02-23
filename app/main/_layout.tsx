@@ -23,7 +23,7 @@ export default function MainLayout() {
       const token = await AsyncStorage.getItem('userToken');
       console.log('token', token);
 
-      if (false) {
+      if (token) {
         // 如果有 token，说明用户已登录，跳转到主页面
         setIsLoggedIn(true);
       } else {

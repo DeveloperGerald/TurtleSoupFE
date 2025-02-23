@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import styles from './AuthStyles';
+import { register } from '../service/user';
+import { router } from 'expo-router';
 
 export default function RegisterScreen({ navigation }: any){
   const [username, setUsername] = useState('');
@@ -44,13 +46,9 @@ export default function RegisterScreen({ navigation }: any){
 
     try {
       // 发送注册请求
-      const response = await axios.post('https://your-api-url/register', {
-        username,
-        password,
-      });
-      console.log('注册成功:', response.data);
+      const registerRes = await register(username, password);
       // 注册成功后，跳转到登录页面
-      navigation.navigate('Login');
+      router.replace('/auth/LoginScreen');
     } catch (err) {
       console.error('注册失败', err);
       setError('注册失败，请稍后再试');
